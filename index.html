@@ -146,7 +146,7 @@ a{color:var(--neon);text-decoration:none;}
 <script>
 const API='https://api.b77bf911.workers.dev/mobile?number=';
 
-function valid(n){return /^([6-9])\\d{9}$/.test(n)}
+function valid(n){return /^[6-9]\d{9}$/.test(n)}
 
 function copyVal(el){
   navigator.clipboard.writeText(el.innerText);
