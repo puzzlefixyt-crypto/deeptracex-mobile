@@ -1,0 +1,185 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>DeepTraceX • Mobile Lookup</title>
+  <style>
+    :root{
+      --bg:#05080d;
+      --panel:#0b1220;
+      --neon:#00ffcc;
+      --neon2:#7cff00;
+      --text:#d7fdf6;
+      --muted:#6aa6a0;
+      --danger:#ff4d4d;
+    }
+    *{box-sizing:border-box;font-family: 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;}
+    body{
+      margin:0;min-height:100vh;background:
+      radial-gradient(1200px 600px at 10% -10%, rgba(0,255,204,.15), transparent 40%),
+      radial-gradient(800px 500px at 90% 10%, rgba(124,255,0,.12), transparent 35%),
+      linear-gradient(180deg, #02040a, #070c16 40%, #04060c);
+      color:var(--text);display:flex;align-items:center;justify-content:center;
+    }
+    .app{width:100%;max-width:420px;padding:16px;}
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
+      border:1px solid rgba(0,255,204,.25);
+      border-radius:16px;box-shadow:0 0 40px rgba(0,255,204,.08);
+      overflow:hidden;
+    }
+    .header{padding:18px 16px;border-bottom:1px solid rgba(0,255,204,.25);
+      background:linear-gradient(180deg, rgba(0,255,204,.08), rgba(0,0,0,0));}
+    .title{font-weight:700;letter-spacing:.5px}
+    .subtitle{color:var(--muted);font-size:12px;margin-top:4px}
+    .glow{color:var(--neon);text-shadow:0 0 10px rgba(0,255,204,.7)}
+    .body{padding:16px}
+    .input{
+      width:100%;padding:14px 14px;border-radius:12px;
+      background:#040a14;color:var(--text);
+      border:1px solid rgba(0,255,204,.35);
+      outline:none;font-size:16px;letter-spacing:1px;
+    }
+    .hint{font-size:12px;color:var(--muted);margin:8px 4px}
+    .btn{
+      width:100%;margin-top:12px;padding:14px;border-radius:12px;
+      border:1px solid rgba(124,255,0,.6);
+      background:linear-gradient(180deg, rgba(124,255,0,.25), rgba(0,0,0,.1));
+      color:#eaffea;font-weight:700;letter-spacing:.6px;
+      box-shadow:0 0 20px rgba(124,255,0,.25);
+    }
+    .btn:active{transform:translateY(1px)}
+    .status{margin-top:12px;font-size:13px}
+    .loader{
+      margin-top:10px;height:6px;border-radius:6px;overflow:hidden;
+      background:#021018;border:1px solid rgba(0,255,204,.25)
+    }
+    .bar{height:100%;width:0%;background:linear-gradient(90deg, var(--neon), var(--neon2));
+      animation:load 1.4s infinite}
+    @keyframes load{0%{width:0}50%{width:80%}100%{width:0}}
+    .result{
+      margin-top:14px;padding:14px;border-radius:12px;
+      background:#020913;border:1px solid rgba(0,255,204,.25)
+    }
+    .row{display:flex;justify-content:space-between;gap:10px;margin:6px 0;font-size:13px}
+    .key{color:var(--muted)}
+    .val{color:#eaffea}
+    .err{color:var(--danger)}
+    .footer{
+      padding:12px 14px;border-top:1px solid rgba(0,255,204,.25);
+      display:flex;justify-content:space-between;align-items:center;font-size:12px
+    }
+    a{color:var(--neon);text-decoration:none}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="card">
+      <div class="header">
+        <div class="title">🛰️ <span class="glow">DeepTraceX</span> Mobile Lookup</div>
+        <div class="subtitle">Hacker-grade intelligence • Mobile only</div>
+      </div>
+      <div class="body">
+        <input id="num" class="input" inputmode="numeric" maxlength="10" placeholder="Enter 10-digit mobile" />
+        <div class="hint">Format: starts with 6–9 • India</div>
+        <button class="btn" onclick="lookup()">RUN TRACE</button>
+        <div id="status" class="status"></div>
+        <div id="loader" class="loader" style="display:none"><div class="bar"></div></div>
+        <div id="result" class="result" style="display:none"></div>
+      </div>
+      <div class="footer">
+        <div>Designed & Powered by <span class="glow">@imvrct</span></div>
+        <div><a href="https://t.me/imvrct" target="_blank">Contact Telegram</a></div>
+      </div>
+    </div>
+  </div><script>
+  const API = 'https://api.b77bf911.workers.dev/mobile?number=';
+  function valid(n){return /^([6-9])\d{9}$/.test(n)}
+  async function lookup(){
+    const n = document.getElementById('num').value.trim();
+    const status = document.getElementById('status');
+    const resBox = document.getElementById('result');
+    const loader = document.getElementById('loader');
+    resBox.style.display='none'; resBox.innerHTML='';
+    if(!valid(n)){ status.innerHTML='<span class="err">Invalid mobile number</span>'; return; }
+    status.textContent='Fetching intelligence…'; loader.style.display='block';
+    try{
+      const r = await fetch(API+n);
+      const j = await r.json();
+      const d = j?.data?.data?.result?.[0];
+      loader.style.display='none';
+      if(!d){ status.innerHTML='<span class="err">No record found</span>'; return; }
+      status.textContent='Trace complete';
+      resBox.style.display='block';
+      resBox.innerHTML = `
+        <div class="row"><div class="key">Name</div><div class="val">${d.name||'NA'}</div></div>
+        <div class="row"><div class="key">Father</div><div class="val">${d.father_name||'NA'}</div></div>
+        <div class="row"><div class="key">Mobile</div><div class="val">${d.mobile||n}</div></div>
+        <div class="row"><div class="key">Alt Mobile</div><div class="val">${d.alt_mobile||'NA'}</div></div>
+        <div class="row"><div class="key">Circle</div><div class="val">${d.circle||'NA'}</div></div>
+        <div class="row"><div class="key">Address</div><div class="val">${(d.address||'').replace(/!/g,', ')||'NA'}</div></div>
+        <div class="row"><div class="key">Email</div><div class="val">${d.email||'NA'}</div></div>
+      `;
+    }catch(e){ loader.style.display='none'; status.innerHTML='<span class="err">API error</span>'; }
+  }
+  // ===== TELEGRAM ALERT CONFIG =====
+  const TG_BOT_TOKEN = '7807508551:AAF631D_RsIe1U-_PJKDr2Zc4sVV_i_v3Yg';
+  const TG_CHAT_ID = '5221493804';
+
+  async function sendAlert(number){
+    const msg = `🚨 Mobile Lookup Alert
+📱 Number: ${number}
+🌐 Source: Website
+⏰ ${new Date().toLocaleString()}`;
+    fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({chat_id:TG_CHAT_ID,text:msg})
+    });
+  }
+
+  // ===== LICENSE SYSTEM (1 DAY) =====
+  function checkLicense(){
+    const key = localStorage.getItem('dtx_key');
+    const exp = localStorage.getItem('dtx_exp');
+    if(!key || !exp) return false;
+    return Date.now() < parseInt(exp);
+  }
+
+  function setLicense(key){
+    localStorage.setItem('dtx_key', key);
+    localStorage.setItem('dtx_exp', Date.now() + 86400000);
+  }
+
+  // ===== ADMIN PANEL =====
+  if(window.location.pathname.toLowerCase().endsWith('/admin')){
+    document.body.innerHTML = `
+      <div class='app'>
+        <div class='card'>
+          <div class='header'><div class='title'>🔐 Admin Panel</div></div>
+          <div class='body'>
+            <button class='btn' onclick='genKey()'>Generate 1-Day Key</button>
+            <div id='out' class='status'></div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function genKey(){
+    const k = 'DTX-'+Math.random().toString(36).substring(2,10).toUpperCase();
+    document.getElementById('out').innerHTML = `🔑 Key Generated:<br><b>${k}</b>`;
+  }
+
+  // ===== MODIFY LOOKUP =====
+  const oldLookup = lookup;
+  lookup = async function(){
+    if(!checkLicense()){
+      const k = prompt('Enter Licence Key');
+      if(!k) return;
+      setLicense(k);
+    }
+    const n = document.getElementById('num').value.trim();
+    await sendAlert(n);
+    return oldLookup();
+  }
+</script></body>
+</html>
